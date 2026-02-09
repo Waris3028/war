@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Valentine’s Surprise ❤️</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #ffc0cb, #ffb6c1);
+      font-family: 'Georgia', serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .card {
+      background: #fffdfd;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 500px;
+      padding: 30px;
+      text-align: center;
+      position: relative;
+    }
+    .flip {
+      animation: flipIn 1s ease;
+    }
+    @keyframes flipIn {
+      from { transform: rotateY(90deg); opacity: 0; }
+      to { transform: rotateY(0deg); opacity: 1; }
+    }
+    h1, h2, p {
+      color: #b22222;
+      text-shadow: 1px 1px 3px #ffb6c1;
+    }
+    button {
+      margin: 10px;
+      padding: 15px 25px;
+      font-size: 1.2em;
+      background: #ff4d6d;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background: #c9184a;
+    }
+    #typing {
+      font-size: 1.5em;
+      color: #ff1493;
+      margin-top: 20px;
+      min-height: 40px;
+    }
+    .loveBox {
+      background: #ffe6f0;
+      border-radius: 15px;
+      padding: 15px;
+      margin: 10px auto;
+      font-size: 1.4em;
+      color: #d6336c;
+      box-shadow: 0 4px 10px rgba(255,0,0,0.2);
+    }
+    #letterStep, #letterInputStep {
+      display: none;
+    }
+    #letter {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: black;
+      text-align: left;
+      padding: 20px;
+      border: 2px dashed red;
+      border-radius: 10px;
+      background: #ffe6e6;
+      font-family: 'Courier New', cursive;
+    }
+    audio { display: none; }
+  </style>
+</head>
+<body>
+  <div class="card flip" id="mainCard">
+    <!-- Step 1 -->
+    <div id="step1">
+      <h1>Hey, my love 💕</h1>
+      <h2>I want to ask you something... Can I?</h2>
+      <button id="yesBtn">Yes</button>
+      <button id="noBtn">No</button>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="step2" style="display:none;">
+      <h2>GOOD MY CUTIEPIE 😍</h2>
+      <p>Now comes the most important question... are you ready?</p>
+      <button id="readyBtn">Yes</button>
+    </div>
+
+    <!-- Step 3 -->
+    <div id="step3" style="display:none;">
+      <div id="typing"></div>
+    </div>
+
+    <!-- Step 4 -->
+    <div id="step4" style="display:none;">
+      <h2>Choose your answer:</h2>
+      <button class="optionBtn">A. Yes</button>
+      <button class="optionBtn">B. A big YES</button>
+      <button class="optionBtn">C. A very big YES</button>
+      <button class="optionBtn">D. All of the above 💖</button>
+    </div>
+
+    <!-- Final Surprise -->
+    <div id="popup" style="display:none;">
+      <h2>Vani, this is for you 💐</h2>
+      <div class="loveBox">English: I Love You ❤️</div>
+      <div class="loveBox">Urdu: میں تم سے محبت کرتا ہوں</div>
+      <div class="loveBox">Bengali: আমি তোমাকে ভালোবাসি</div>
+      <div class="loveBox">Hindi: मैं तुमसे प्यार करता हूँ</div>
+      <div class="loveBox">Spanish: Te amo</div>
+      <button id="letterBtn">A Letter For You</button>
+    </div>
+
+    <!-- Letter Input Step -->
+    <div id="letterInputStep">
+      <h2>Say "I love you" to open the letter 💌</h2>
+      <input type="text" id="loveInput" placeholder="Type here...">
+      <button id="submitLove">Submit</button>
+      <p id="responseMsg"></p>
+    </div>
+
+    <!-- Letter Step -->
+    <div id="letterStep">
+      <h2>My Special Letter 💌</h2>
+      <div id="letter">Dear Vani</div>
+    </div>
+  </div>
+
+  <!-- Background music -->
+  <audio autoplay loop>
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const step4 = document.getElementById('step4');
+    const typingDiv = document.getElementById('typing');
+    const popup = document.getElementById('popup');
+    const letterBtn = document.getElementById('letterBtn');
+    const letterInputStep = document.getElementById('letterInputStep');
+    const letterStep = document.getElementById('letterStep');
+    const mainCard = document.getElementById('mainCard');
+    const loveInput = document.getElementById('loveInput');
+    const submitLove = document.getElementById('submitLove');
+    const responseMsg = document.getElementById('responseMsg');
+
+    // Function to show steps with flip animation
+    function showStep(stepToShow) {
+      [step1, step2, step3, step4, popup, letterInputStep, letterStep].forEach(s => s.style.display = "none");
+      stepToShow.style.display = "block";
+
+      // Reset and re-trigger flip animation
+      mainCard.classList.remove("flip");
+      void mainCard.offsetWidth; // force reflow
+      mainCard.classList.add("flip");
+    }
+
+    // Step 1 logic: enlarge Yes until clicked
+    let yesSize = 1;
+    noBtn.addEventListener('click', () => {
+      yesSize += 0.5;
+      yesBtn.style.transform = `scale(${yesSize})`;
+    });
+    yesBtn.addEventListener('click', () => showStep(step2));
+
+    // Step 2 logic
+    document.getElementById('readyBtn').addEventListener('click', () => {
+      showStep(step3);
+      typeText("Will you be my Valentine?");
+    });
+
+    // Typing animation
+    function typeText(text) {
+      let i = 0;
+      const interval = setInterval(() => {
+        typingDiv.innerHTML = text.substring(0, i+1);
+        i++;
+        if (i === text.length) {
+          clearInterval(interval);
+          step4.style.display = 'block';
+        }
+      }, 100);
+    }
+
+    // Step 4 logic
+    document.querySelectorAll('.optionBtn').forEach(btn => {
+      btn.addEventListener('click', () => showStep(popup));
+    });
+
+    // Letter button
+    letterBtn.addEventListener('click', () => showStep(letterInputStep));
+
+    // Love input logic
+    submitLove.addEventListener('click', () => {
+      if (loveInput.value.toLowerCase().trim() === "i love you") {
+        responseMsg.textContent = "I Love You Too Darloo 💖";
+        setTimeout(() => showStep(letterStep), 1500);
+      } else {
+        responseMsg.textContent = "Say it properly, my love 😘";
+      }
+    });
+  </script>
+</body>
+</html>
